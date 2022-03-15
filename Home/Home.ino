@@ -1,71 +1,90 @@
-#define relay1 5
-#define relay2 6
-#define relay3 7
-#define Ir1    A0
-#define Ir2    A1
-#define Touch  8
-#define Buzzer 9
-int touch_Value = 0, IR1 = 0, IR2 = 0;
+#define IR_BELL               2
+#define BELL                  3
+#define IR_TLESS              4
+#define Relay_TLess           5
+#define Relay_Bluetooth_Light 6
+
+
+int bell_value = 1, Tless_value = 1;
 void setup()
 {
-  pinMode(Touch, INPUT_PULLUP);
-  pinMode(Buzzer, OUTPUT);
-  pinMode(relay1, OUTPUT);
-  pinMode(relay2, OUTPUT);
-  pinMode(relay3, OUTPUT);
-  pinMode(Ir1, INPUT);
-  pinMode(Ir2, INPUT);
   Serial.begin(9600);
+  pinMode(IR_BELL, INPUT);
+  pinMode(IR_TLESS, INPUT);
+  pinMode(BELL, OUTPUT);
+  pinMode(Relay_TLess, OUTPUT);
+  pinMode(Relay_Bluetooth_Light, OUTPUT);
+  digitalWrite(Relay_Bluetooth_Light, HIGH);
+  digitalWrite(Relay_TLess, HIGH);
 }
 void loop()
 {
-  //  Touch Btn
-  //  Serial.println(digitalRead(Touch));//Touch Value
-  while (digitalRead(Touch) == 1)
-  {
-    touch_Value = 1;
+  //  TOUCH_LESS BELL
+  Bell();
+  //  TOUCH LESS LIGHT
+  TLess();
+  // Bluetooth
+  Bluetooth();
 
-  }
-  if (touch_Value == 1)
-  {
-    if (digitalRead(relay1) == 1)
-    {
-      digitalWrite(relay1, LOW);
-    }
-    else
-    {
-      digitalWrite(relay1, HIGH);
-    }
-    touch_Value = 0;
-  }
 
-//Touch Less Door Bell
-//  Serial.println(digitalRead(Ir2));//IR
-//  Serial.println(digitalRead(Ir1));//IR
-  while (digitalRead(Ir1) == 0)
+}
+
+void Bell()
+{
+  //  Serial.println(digitalRead(IR_BELL));
+  while (digitalRead(IR_BELL) == 0)
   {
-    IR1 = 1;
+    //    Serial.println(digitalRead(IR_BELL));
+    bell_value = 0;
   }
-  while (digitalRead(Ir2) == 0)
+  if (bell_value == 0)
   {
-    IR2 = 1;
-  }
-  if (IR1 == 1 || IR2 == 1)
-  {
-    tone(Buzzer,2000);
+    tone(BELL, 2000);
     delay(3000);
-    noTone(Buzzer);
-     IR1 = 0;
-     IR2 = 0;
+    noTone(BELL);
+    bell_value = 1;
   }
-  char Data='0';
-  while(Serial.available()>0)
+}
+
+void TLess()
+{
+//  Serial.println(digitalRead(IR_TLESS));
+  while (digitalRead(IR_TLESS) == 0)
+  {
+    Serial.println(digitalRead(IR_TLESS));
+    Tless_value = 0;
+  }
+  
+  if (Tless_value == 0)
+  {
+    if (digitalRead(Relay_TLess) == HIGH)
+    {
+      digitalWrite(Relay_TLess, LOW);
+      delay(900);
+    }
+    else if (digitalRead(Relay_TLess) == LOW)
+    {
+      digitalWrite(Relay_TLess, HIGH);
+      delay(900);
+    }
+    Tless_value = 1;
+  }
+}
+
+void Bluetooth()
+{
+  char Data = '0';
+  while (Serial.available() > 0)
   {
     Data = Serial.read();
-    Serial.print(Data);
-    if(Data == 'A')
-    {digitalWrite(relay1,LOW);}
-    if(Data == 'a')
-    {digitalWrite(relay1,HIGH);}
+    Serial.println(Data);
+    if (Data == 'A')
+    {
+      digitalWrite(Relay_Bluetooth_Light, LOW);
+    }
+    if (Data == 'a')
+    {
+      digitalWrite(Relay_Bluetooth_Light, HIGH);
+    }
   }
 }
